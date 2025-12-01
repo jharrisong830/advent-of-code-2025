@@ -12,6 +12,7 @@ func getInputFromFile(path: String) -> [String] {
 }
 
 
+
 func countClicks(curr: Int, instr: String) -> (Int, Int) {
     let direction = switch instr.first! {
         case "L": -1
@@ -39,38 +40,6 @@ func countClicks(curr: Int, instr: String) -> (Int, Int) {
     return (new, clicks)
 }
 
-
-
-func countClicks_old(curr: Int, instr: String) -> (Int, Int) {
-    let direction = switch instr.first! {
-        case "L": -1
-        case "R": 1
-        default: 0
-    }
-
-    let val = Int(instr.dropFirst())!
-
-    var new = curr + (val * direction)
-
-    if new == 0 {
-        print("\(instr), from \(curr) to \(new), 1 click")
-        return (new, 1)
-    } else {
-        var clicks = 0
-
-        while new < 0 {
-            new += 100
-            clicks += 1
-        }
-        while new >= 100 {
-            new -= 100
-            clicks += 1
-        }
-
-        print("\(instr), from \(curr) to \(new), \(clicks) clicks")
-        return (new, clicks)
-    }
-}
 
 
 func main() {
