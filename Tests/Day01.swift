@@ -4,7 +4,7 @@ import Testing
 
 // Make a copy of this file for every day to ensure the provided smoke tests
 // pass.
-struct Day00Tests {
+struct Day01Tests {
   // Smoke test data provided in the challenge question
   let testData = """
     L68
