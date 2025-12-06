@@ -8,39 +8,69 @@ struct Day06: AdventDay {
   }
 
   // Splits input data into its component parts and convert from string.
-  var entities: (operands: [[Int]], operations: [Operation]) {
+  var entities: (operandList: [[Int]], operations: [Operation]) {
     let lines = data.split(separator: "\n").map { String($0) }
     
-    let operands = lines.dropLast().map { ln in ln.split(separator: " ").map { Int($0)! } }
+    let operandList = lines.dropLast().map { ln in ln.split(separator: " ").map { Int($0)! } }
     let operations = lines.last!.split(separator: " ").map { Operation(rawValue: String($0))! }
 
-    return (operands, operations)
+    return (operandList, operations)
   }
 
-  func solveProblemArray(operands: [[Int]], operations: [Operation]) -> Int {
-    var overallResult = 0
+  var cephalopodEntities: (operands: [[String]], operations: [Operation]) {
+    let lines = data.split(separator: "\n").map { String($0) }
 
-    for j in 0..<operands.first!.count {
-      var problemResult = operands[0][j]
+    let operandStrings = lines.dropLast().map { ln in ln.split(separator: " ").map { String($0) } }
+    let maxLen = operandStrings.joined().reduce(-1) { acc, elem in max(acc, elem.count) }
 
-      for i in 1..<operands.count {
-        switch operations[j] {
-          case .add: problemResult += operands[i][j]
-          case .multiply: problemResult *= operands[i][j]
-        }
-      }
-
-      overallResult += problemResult
+    var paddedOperands: [[String]] = []
+    for ln in operandStrings {
+      let paddedLine = ln.map { str in str.padding(toLength: maxLen, withPad: "0", startingAt: 0) }
+      paddedOperands.append(paddedLine)
     }
 
-    return overallResult
+    let operations = lines.last!.split(separator: " ").map { Operation(rawValue: String($0))! }
+
+    return (paddedOperands, operations)
+  }
+
+  func groupToProblems(operandList: [[Int]], operations: [Operation]) -> [([Int], Operation)] {
+    // given the problem array, where each column is to be operated on,
+    // return a new array of tuples, containing a list of operands from the column and the corresponding operation
+    var result: [([Int], Operation)] = []
+    
+    for j in 0..<operations.count {
+      // loop through all columns
+      var nums: [Int] = []
+      for i in 0..<operandList.count {
+        // loop through each row to get all items in column j
+        nums.append(operandList[i][j])
+      }
+
+      result.append((nums, operations[j]))
+    }
+
+    return result
+  }
+
+  func solveProblem(operands: [Int], operation: Operation) -> Int {
+    // reduces the operands according to the given operation
+    switch operation {
+      case .add: 
+        return operands.reduce(0, +)
+      case .multiply: 
+        return operands.reduce(1, *)
+    }
   }
 
   func part1() -> Any {
-    solveProblemArray(operands: entities.operands, operations: entities.operations)
+    groupToProblems(operandList: entities.operandList, operations: entities.operations).reduce(0) { acc, prob in 
+      let (nums, op) = prob
+      return acc + solveProblem(operands: nums, operation: op)
+    }
   }
 
   func part2() -> Any {
-    ()
+    return ()
   }
 }
