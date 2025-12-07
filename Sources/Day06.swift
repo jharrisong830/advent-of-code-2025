@@ -7,17 +7,40 @@ struct Day06: AdventDay {
     case multiply = "*"
   }
 
+  func transpose<T>(matrix a: [[T]]) throws -> [[T]] {
+    if !a.allSatisfy({ $0.count == a.first!.count }) {
+      fatalError("matrix not rectangular")
+    }
+
+    let rows = a.count
+    let cols = a.first!.count
+
+    var new: [[T]] = []
+
+    for i in 0..<cols {
+      var newRow: [T] = []
+      for j in 0..<rows {
+        newRow.append(a[j][i]) // new[i][j] = old[j][i]
+      }
+      new.append(newRow)
+    }
+
+    return new
+  }
+
   // Splits input data into its component parts and convert from string.
   var entities: (operandList: [[Int]], operations: [Operation]) {
     let lines = data.split(separator: "\n").map { String($0) }
     
     let operandList = lines.dropLast().map { ln in ln.split(separator: " ").map { Int($0)! } }
+    let transposedOperandList = try! transpose(matrix: operandList) // transpose, such that each sublist is a grouping for a problem
+
     let operations = lines.last!.split(separator: " ").map { Operation(rawValue: String($0))! }
 
-    return (operandList, operations)
+    return (transposedOperandList, operations)
   }
 
-  var cephalopodEntities: (operands: [[String]], operations: [Operation]) {
+  var cephalopodEntities: (operandList: [[String]], operations: [Operation]) {
     let lines = data.split(separator: "\n").map { String($0) }
 
     let operandStrings = lines.dropLast().map { ln in ln.split(separator: " ").map { String($0) } }
@@ -31,26 +54,27 @@ struct Day06: AdventDay {
 
     let operations = lines.last!.split(separator: " ").map { Operation(rawValue: String($0))! }
 
-    return (paddedOperands, operations)
-  }
-
-  func groupToProblems(operandList: [[Int]], operations: [Operation]) -> [([Int], Operation)] {
-    // given the problem array, where each column is to be operated on,
-    // return a new array of tuples, containing a list of operands from the column and the corresponding operation
-    var result: [([Int], Operation)] = []
-    
     for j in 0..<operations.count {
       // loop through all columns
-      var nums: [Int] = []
-      for i in 0..<operandList.count {
+      var nums: [String] = [] // collect all strings for this column
+      for i in 0..<operandStrings.count {
         // loop through each row to get all items in column j
-        nums.append(operandList[i][j])
+        nums.append(operandStrings[i][j])
       }
 
-      result.append((nums, operations[j]))
+      var cephalopodNums: [String] = []
+      for l in 0..<maxLen {
+        var reconstructed = ""
+        for k in 0..<nums.count {
+          let currInd = nums[k].index(nums[k].startIndex, offsetBy: l)
+          reconstructed += String(nums[k][currInd])
+        }
+        cephalopodNums.append(reconstructed)
+      }
+      print(cephalopodNums)
     }
 
-    return result
+    return (paddedOperands, operations)
   }
 
   func solveProblem(operands: [Int], operation: Operation) -> Int {
@@ -64,13 +88,15 @@ struct Day06: AdventDay {
   }
 
   func part1() -> Any {
-    groupToProblems(operandList: entities.operandList, operations: entities.operations).reduce(0) { acc, prob in 
+    zip(entities.operandList, entities.operations).reduce(0) { acc, prob in 
+      // zipping transposed matrix with operations gives tuples of problems
       let (nums, op) = prob
       return acc + solveProblem(operands: nums, operation: op)
     }
   }
 
   func part2() -> Any {
+    cephalopodEntities
     return ()
   }
 }
