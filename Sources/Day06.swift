@@ -40,41 +40,40 @@ struct Day06: AdventDay {
     return (transposedOperandList, operations)
   }
 
-  var cephalopodEntities: (operandList: [[String]], operations: [Operation]) {
+  var cephalopodEntities: (operandList: [[Int]], operations: [Operation]) {
     let lines = data.split(separator: "\n").map { String($0) }
 
-    let operandStrings = lines.dropLast().map { ln in ln.split(separator: " ").map { String($0) } }
-    let maxLen = operandStrings.joined().reduce(-1) { acc, elem in max(acc, elem.count) }
-
-    var paddedOperands: [[String]] = []
-    for ln in operandStrings {
-      let paddedLine = ln.map { str in str.padding(toLength: maxLen, withPad: "0", startingAt: 0) }
-      paddedOperands.append(paddedLine)
-    }
-
+    let operands = lines.dropLast()
     let operations = lines.last!.split(separator: " ").map { Operation(rawValue: String($0))! }
 
-    for j in 0..<operations.count {
-      // loop through all columns
-      var nums: [String] = [] // collect all strings for this column
-      for i in 0..<operandStrings.count {
-        // loop through each row to get all items in column j
-        nums.append(operandStrings[i][j])
+    var operandList: [[Int]] = []
+    var currOperands: [String] = []
+    for i in 0..<operands.first!.count {
+      let newNumStr = operands.map { 
+        // get ith character of each line
+        $0[$0.index($0.startIndex, offsetBy: i)]
+      }.reduce("") { acc, char in 
+        acc + (char == " " ? "" : String(char))
       }
 
-      var cephalopodNums: [String] = []
-      for l in 0..<maxLen {
-        var reconstructed = ""
-        for k in 0..<nums.count {
-          let currInd = nums[k].index(nums[k].startIndex, offsetBy: l)
-          reconstructed += String(nums[k][currInd])
-        }
-        cephalopodNums.append(reconstructed)
+      if newNumStr == "" {
+        // we have all of the numbers for this problem
+        let nums = currOperands.map { Int($0)! }
+        operandList.append(nums)
+
+        currOperands = [] // reset
+      } else {
+        currOperands.append(newNumStr)
       }
-      print(cephalopodNums)
     }
 
-    return (paddedOperands, operations)
+    // add last problem when at end of line 
+    if !currOperands.isEmpty { 
+      let nums = currOperands.map { Int($0)! }
+      operandList.append(nums)
+    }
+
+    return (operandList, operations)
   }
 
   func solveProblem(operands: [Int], operation: Operation) -> Int {
@@ -96,7 +95,10 @@ struct Day06: AdventDay {
   }
 
   func part2() -> Any {
-    cephalopodEntities
-    return ()
+    zip(cephalopodEntities.operandList, cephalopodEntities.operations).reduce(0) { acc, prob in 
+      // zipping transposed matrix with operations gives tuples of problems
+      let (nums, op) = prob
+      return acc + solveProblem(operands: nums, operation: op)
+    }
   }
 }
