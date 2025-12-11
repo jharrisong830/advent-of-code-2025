@@ -56,8 +56,6 @@ struct Day11: AdventDay {
       // recursive helper, starting from key k and marking whether either of the two specific servers have been reached 
       if let m = pathsMemo[PathTuple(k, dac, fft)] { return m } 
       if k == "out" { return dac && fft ? 1 : 0 }
-      
-      print("\(k) -> \(network[k]!) (dac = \(dac) & fft = \(fft))")
 
       let result = network[k]!.map { conn in _countDacFft(from: conn, dac || k == "dac", fft || k == "fft") }.reduce(0, +)
       pathsMemo[PathTuple(k, dac, fft)] = result
